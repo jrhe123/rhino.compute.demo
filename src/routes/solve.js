@@ -51,6 +51,13 @@ function collectParams (req, res, next){
   let definitionName = res.locals.params.definition
   if (definitionName===undefined)
     definitionName = res.locals.params.pointer
+
+  console.log("!!!!!!")
+  console.log("!!!!!!")
+  console.log("!!!!!!")
+  console.log("!!!!!!")
+  console.log("definitionName: ", definitionName)
+
   definition = req.app.get('definitions').find(o => o.name === definitionName)
   if(!definition)
     throw new Error('Definition not found on server.')

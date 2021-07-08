@@ -55,11 +55,10 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message
-  console.error(err)
+  console.error("error: ", err)
   res.locals.error = req.app.get('env') === 'development' ? err : {}
   data = { message: err.message }
-  if (req.app.get('env') === 'development')
-  {
+  if (req.app.get('env') === 'development') {
     data.stack = err.stack
   }
   // send the error

@@ -4,6 +4,8 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/exampl
 import { Rhino3dmLoader } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/loaders/3DMLoader.js'
 import rhino3dm from 'https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/rhino3dm.module.js'
 
+import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/exporters/GLTFExporter.js';
+
 // set up loader for converting the results to threejs
 const loader = new Rhino3dmLoader()
 loader.setLibraryPath( 'https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/' )
@@ -88,7 +90,7 @@ function collectResults(responseJson) {
   const values = responseJson.values
   console.log(responseJson)
 
-  const str = values[0].InnerTree['{ 0; }'][0].data
+  const str = values[0].InnerTree['{0}'][0].data
   const data = JSON.parse(str)
   const arr = _base64ToArrayBuffer(data)
   doc = rhino.File3dm.fromByteArray(arr)
@@ -153,6 +155,11 @@ function onSliderChange () {
   else
     document.getElementById('loader').style.display = 'none'
 }
+
+document.getElementById( 'export_scene' ).addEventListener( 'click', function () {
+  console.log("download glb file now..")
+  exportGLTF(scene);
+} );
 
 // BOILERPLATE //
 
@@ -236,4 +243,56 @@ function onWindowResize() {
   
   controls.update();
   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function exportGLTF( input ) {
+  const gltfExporter = new GLTFExporter();
+  const options = {
+    trs: false,
+    onlyVisible: true,
+    truncateDrawRange: true,
+    binary: true,
+    maxTextureSize: 4096 || Infinity // To prevent NaN value
+  };
+  gltfExporter.parse( input, function ( result ) {
+    if ( result instanceof ArrayBuffer ) {
+      saveArrayBuffer( result, 'test.glb' );
+    } else {
+      const output = JSON.stringify( result, null, 2 );
+      console.log( output );
+      saveString( output, 'test.gltf' );
+    }
+  }, options );
+}
+
+function saveArrayBuffer( buffer, filename ) {
+  save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+}
+
+function saveString( text, filename ) {
+  save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+}
+
+const link = document.createElement( 'a' );
+link.style.display = 'none';
+document.body.appendChild( link ); // Firefox workaround, see #6594
+
+function save( blob, filename ) {
+  link.href = URL.createObjectURL( blob );
+  link.download = filename;
+  link.click();
+  // URL.revokeObjectURL( url ); breaks Firefox...
 }

@@ -4,6 +4,9 @@ import rhino3dm from 'https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/rhino3dm
 
 /* eslint no-undef: "off", no-unused-vars: "off" */
 
+import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/exporters/GLTFExporter.js';
+
+
 const definition = 'BranchNodeRnd.gh'
 
 // setup input change events
@@ -16,6 +19,13 @@ radius_slider.addEventListener( 'touchend', onSliderChange, false )
 const length_slider = document.getElementById( 'length' )
 length_slider.addEventListener( 'mouseup', onSliderChange, false )
 length_slider.addEventListener( 'touchend', onSliderChange, false )
+
+
+document.getElementById( 'export_scene' ).addEventListener( 'click', function () {
+  console.log("download glb file now..")
+  exportGLTF(scene);
+} );
+
 
 // load the rhino3dm library
 let rhino
@@ -66,6 +76,10 @@ async function compute(){
     headers = response.headers.get('server-timing')
     const responseJson = await response.json()
 
+    console.log("request: ", request)
+    console.log("response: ", response)
+    console.log("responseJson: ", responseJson)
+
     // Request finished. Do processing here.
     let t1 = performance.now()
     const computeSolveTime = t1 - timeComputeStart
@@ -73,7 +87,8 @@ async function compute(){
 
     // hide spinner
     document.getElementById('loader').style.display = 'none'
-    let data = JSON.parse(responseJson.values[0].InnerTree['{ 0; }'][0].data)
+    // let data = JSON.parse(responseJson.values[0].InnerTree['{ 0; }'][0].data)
+    let data = JSON.parse(responseJson.values[0].InnerTree['{0}'][0].data)
     let mesh = rhino.DracoCompression.decompressBase64String(data)
       
     t1 = performance.now()
@@ -178,4 +193,69 @@ function meshToThreejs (mesh, material) {
   let loader = new THREE.BufferGeometryLoader()
   var geometry = loader.parse(mesh.toThreejsJSON())
   return new THREE.Mesh(geometry, material)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function exportGLTF( input ) {
+  const gltfExporter = new GLTFExporter();
+  const options = {
+    trs: false,
+    onlyVisible: true,
+    truncateDrawRange: true,
+    binary: true,
+    maxTextureSize: 4096 || Infinity // To prevent NaN value
+  };
+
+  console.log("input: ", input)
+
+  gltfExporter.parse( input, function ( result ) {
+
+    console.log("result: ", result)
+
+    // if ( result instanceof ArrayBuffer ) {
+    //   saveArrayBuffer( result, 'test.glb' );
+    // } else {
+    //   const output = JSON.stringify( result, null, 2 );
+    //   console.log( output );
+    //   saveString( output, 'test.gltf' );
+    // }
+  }, options );
+}
+
+function saveArrayBuffer( buffer, filename ) {
+  save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+}
+
+function saveString( text, filename ) {
+  save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+}
+
+const link = document.createElement( 'a' );
+link.style.display = 'none';
+document.body.appendChild( link ); // Firefox workaround, see #6594
+
+function save( blob, filename ) {
+  link.href = URL.createObjectURL( blob );
+  link.download = filename;
+  link.click();
+  // URL.revokeObjectURL( url ); breaks Firefox...
 }

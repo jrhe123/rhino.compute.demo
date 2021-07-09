@@ -34,10 +34,10 @@ function setComputeParams (){
  */
 router.get('/',  function(req, res, next) {
   let definitions = []
+  // in middleware
   req.app.get('definitions').forEach( def => {
     definitions.push({name: def.name})
   })
-
   res.setHeader('Content-Type', 'application/json')
   res.send(JSON.stringify(definitions))
 })

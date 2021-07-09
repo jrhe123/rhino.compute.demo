@@ -22,6 +22,9 @@ if(process.env.MEMCACHIER_SERVERS !== undefined) {
 }
 
 function computeParams (req, res, next){
+
+  console.log("call computeParams")
+
   compute.url = process.env.RHINO_COMPUTE_URL
   compute.apiKey = process.env.RHINO_COMPUTE_KEY
   next()
@@ -33,6 +36,9 @@ function computeParams (req, res, next){
  */
 
 function collectParams (req, res, next){
+
+  console.log("call collectParams")
+
   res.locals.params = {}
   switch (req.method){
   case 'HEAD':
@@ -52,12 +58,6 @@ function collectParams (req, res, next){
   if (definitionName===undefined)
     definitionName = res.locals.params.pointer
 
-  console.log("!!!!!!")
-  console.log("!!!!!!")
-  console.log("!!!!!!")
-  console.log("!!!!!!")
-  console.log("definitionName: ", definitionName)
-
   definition = req.app.get('definitions').find(o => o.name === definitionName)
   if(!definition)
     throw new Error('Definition not found on server.')
@@ -66,7 +66,6 @@ function collectParams (req, res, next){
   res.locals.params.definition = definition
 
   next()
-
 }
 
 /**
@@ -75,6 +74,8 @@ function collectParams (req, res, next){
  */
 
 function checkCache (req, res, next){
+
+  console.log("call checkCache")
 
   const key = {}
   key.definition = { 'name': res.locals.params.definition.name, 'id': res.locals.params.definition.id }
@@ -112,8 +113,10 @@ function checkCache (req, res, next){
  */
 
 function commonSolve (req, res, next){
-  const timePostStart = performance.now()
 
+  console.log("call commonSolve")
+
+  const timePostStart = performance.now()
   // set general headers
   // what is the proper max-age, 31536000 = 1 year, 86400 = 1 day
   res.setHeader('Cache-Control', 'public, max-age=31536000')
@@ -153,7 +156,6 @@ function commonSolve (req, res, next){
 
     // call compute server
     compute.Grasshopper.evaluateDefinition(definitionPath, trees, false).then( (response) => {
-        
       // Throw error if response not ok
       if(!response.ok) {
         throw new Error(response.statusText)
@@ -161,11 +163,8 @@ function commonSolve (req, res, next){
         computeServerTiming = response.headers
         return response.text()
       }
-
     }).then( (result) => {
-
       const timeComputeServerCallComplete = performance.now()
-
       let computeTimings = computeServerTiming.get('server-timing')
       let sum = 0
       computeTimings.split(',').forEach(element => {

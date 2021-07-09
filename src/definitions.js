@@ -29,6 +29,10 @@ async function getParams(definitionUrl) {
   // TODO: set and forget!
   compute.url = process.env.RHINO_COMPUTE_URL
   compute.apiKey = process.env.RHINO_COMPUTE_KEY
+
+  console.log("compute.url: ", compute.url)
+  console.log("compute.apiKey: ", compute.apiKey)
+
   const response = await compute.computeFetch('io', { 'pointer': definitionUrl }, false)
   
   // throw error if response not ok

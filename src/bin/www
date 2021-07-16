@@ -19,7 +19,7 @@ function start(id){
   var app = require('../app')
   app.set('definitions', definitions)
 
-  console.log("in middleware: ", definitions)
+  // console.log("in middleware: ", definitions)
 
   var debug = require('debug')('compute.appserver:server')
 

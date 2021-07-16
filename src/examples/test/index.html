@@ -178,8 +178,10 @@ async function compute() {
   // 1 - R
   // 2 - W
   // 3 - SS
-  url.searchParams.append("RH_IN:number", 2)
-  url.searchParams.append("RH_IN:path", "C:/\Dummy/\jwln0300_2.dxf")
+  url.searchParams.append("RH_IN:number", 0)
+  url.searchParams.append("RH_IN:path", "C:/\Dummy/\jwln0300.dxf")
+
+  console.log("url: ", url.toString())
 
   try {
     const response = await fetch(url)
@@ -213,6 +215,9 @@ function collectResults_v2(responseJson) {
   const str = values[0].InnerTree['{0;0;0}'][0].data
   const data = JSON.parse(str)
   const arr = _base64ToArrayBuffer(data)
+
+  console.log("arr: ", arr)
+
   doc = rhino.File3dm.fromByteArray(arr)
 
   if (doc.objects().count < 1) {
@@ -226,7 +231,7 @@ function collectResults_v2(responseJson) {
 
   // load rhino doc into three.js scene
   loader.parse(arr, function (object) {
-    // console.log("loaded: ", object)
+    console.log("loaded: ", object)
     scene.traverse(child => {
       // console.log("scene child: ", child)
       // 1. Scene

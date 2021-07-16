@@ -39,11 +39,14 @@
   },
   "scripts": {
     "start": "node ./src/bin/www",
+    "test": "nodemon ./src/bin/www",
     "lint": "eslint src/*.js --fix && eslint src/routes/*.js --fix && eslint src/bin/www --fix",
     "start-args": "node ./src/bin/www --computeUrl http://localhost:8081/"
   },
   "dependencies": {
+    "atob": "^2.1.2",
     "camelcase-keys": "^6.2.2",
+    "canvas": "^2.8.0",
     "compression": "1.7.4",
     "compute-rhino3d": "^0.12.0",
     "cors": "2.8.5",
@@ -57,7 +60,11 @@
     "node-cache": "^5.1.1",
     "node-fetch": "^2.6.0",
     "rhino3dm": "0.13.0",
-    "throng": "4.0.0"
+    "three": "^0.130.1",
+    "throng": "4.0.0",
+    "url": "^0.11.0",
+    "vblob": "^1.0.2",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "eslint": "7.5.0"

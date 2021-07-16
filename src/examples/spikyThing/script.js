@@ -7,7 +7,8 @@ import rhino3dm from 'https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/rhino3dm
 import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/exporters/GLTFExporter.js';
 
 
-const definition = 'BranchNodeRnd.gh'
+// const definition = 'BranchNodeRnd.gh'
+const definition = 'value_list_12.gh'
 
 // setup input change events
 const count_slider = document.getElementById( 'count' )
@@ -88,7 +89,10 @@ async function compute(){
     // hide spinner
     document.getElementById('loader').style.display = 'none'
     // let data = JSON.parse(responseJson.values[0].InnerTree['{ 0; }'][0].data)
-    let data = JSON.parse(responseJson.values[0].InnerTree['{0}'][0].data)
+    let data = JSON.parse(responseJson.values[0].InnerTree['{0;0;0}'][0].data)
+
+    console.log(data)
+
     let mesh = rhino.DracoCompression.decompressBase64String(data)
       
     t1 = performance.now()

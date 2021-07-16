@@ -23,6 +23,7 @@ if(process.env.MEMCACHIER_SERVERS !== undefined) {
 
 function computeParams (req, res, next){
 
+  console.log("gh: ", req.params.definition)
   console.log("call computeParams")
 
   compute.url = process.env.RHINO_COMPUTE_URL
@@ -127,6 +128,13 @@ function commonSolve (req, res, next){
     //console.log(res.locals.cacheResult)
     const timespanPost = Math.round(performance.now() - timePostStart)
     res.setHeader('Server-Timing', `cacheHit;dur=${timespanPost}`)
+
+
+    if (req.query.testMode) {
+      testMode(res.locals.cacheResult, req.query.fileName)
+    }
+
+
     res.send(res.locals.cacheResult)
     return
   } else {
@@ -164,6 +172,13 @@ function commonSolve (req, res, next){
         return response.text()
       }
     }).then( (result) => {
+
+
+      if (req.query.testMode) {
+        testMode(result, req.query.fileName)
+      }
+
+
       const timeComputeServerCallComplete = performance.now()
       let computeTimings = computeServerTiming.get('server-timing')
       let sum = 0
@@ -204,3 +219,128 @@ router.get('/:definition', pipeline)
 router.post('/', pipeline)
 
 module.exports = router
+
+
+
+function decodeItem(item, rhino) {
+  const data = JSON.parse(item.data)
+  // console.log("decode: ", data)
+  if (item.type === 'System.String') {
+    console.log("hit 1")
+    // hack for draco meshes
+    try {
+        return rhino.DracoCompression.decompressBase64String(data)
+    } catch {} // ignore errors (maybe the string was just a string...)
+  } else if (item.type === 'Rhino.Display.DisplayMaterial') {
+    console.log("hit 2")
+    return data
+  } else if (typeof data === 'object') {
+    console.log("hit 3")
+    return rhino.CommonObject.decode(data)
+  }
+  console.log("hit 4")
+  return null
+}
+
+function testMode(responseStr, fileName){
+  const responseJson = JSON.parse(responseStr)
+  const values = responseJson.values
+  fileName = fileName ? fileName : "temp.glb"
+
+  const rhino3dm = require("rhino3dm")
+  rhino3dm().then((rhino) => {
+    var rhinoMeshObject
+    var rhinoMaterialObject
+    // for each output (RH_OUT:*)...
+    for ( let i = 0; i < values.length; i ++ ) {
+      // ...iterate through data tree structure...
+      for (const path in values[i].InnerTree) {
+        const branch = values[i].InnerTree[path]
+        // ...and for each branch...
+        for( let j = 0; j < branch.length; j ++) {
+          if (branch[j].type === 'Rhino.Geometry.Mesh') {
+            rhinoMeshObject = decodeItem(branch[j], rhino)
+          } else if (branch[j].type === 'Rhino.Display.DisplayMaterial') {
+            rhinoMaterialObject = decodeItem(branch[j], rhino)
+          }
+        }
+      }
+    }
+
+    console.log("rhinoMeshObject: ", rhinoMeshObject)
+    console.log("rhinoMaterialObject: ", rhinoMaterialObject)
+
+    testMode2(rhinoMeshObject, rhinoMaterialObject, fileName)
+  })
+}
+
+function testMode2(rhinoMesh, materialObject, fileName){
+  // Hack in nodejs
+  const THREE = require('three');
+  const Canvas = require('canvas');
+  const { Blob, FileReader } = require('vblob');
+  const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+  const URL = require('url').URL;
+
+  // Patch global scope to imitate browser environment.
+  global.window = global;
+  global.Blob = Blob;
+  global.XMLHttpRequest = XMLHttpRequest;
+  global.URL = URL;
+  global.FileReader = FileReader;
+  global.THREE = THREE;
+  global.document = {
+    createElement: (nodeName) => {
+      if (nodeName !== 'canvas') throw new Error(`Cannot create node ${nodeName}`);
+      const canvas = new Canvas(256, 256);
+      return canvas;
+    }
+  };
+  // End of hack
+
+  let loader = new THREE.BufferGeometryLoader()
+  var geometry = loader.parse(rhinoMesh.toThreejsJSON())
+
+  var threeMaterial = new THREE.MeshBasicMaterial()
+  var diffuse = `rgb(${materialObject.Diffuse})`
+  const color = new THREE.Color(diffuse);
+  threeMaterial.color = color
+  
+  let newMesh = new THREE.Mesh(geometry, threeMaterial)
+
+  // let newMesh = new THREE.Mesh(geometry)
+  newMesh.name = "my_mesh"
+  newMesh.material.name = "my_mesh_material"
+
+  console.log("newMesh created success")
+
+  require('three/examples/js/exporters/GLTFExporter');
+  const exporter = new THREE.GLTFExporter();
+  const options = {
+    trs: false,
+    onlyVisible: true,
+    truncateDrawRange: true,
+    binary: true,
+    maxTextureSize: 4096 || Infinity // To prevent NaN value
+  };
+  exporter.parse(newMesh, (result) => {
+    if ( result instanceof ArrayBuffer ) {
+      let blob = new Blob( [ result ], { type: 'application/octet-stream' } )
+      var reader = new FileReader()
+      reader.onload = function(){
+        var buffer = new Buffer(reader.result)
+        const fs = require('fs')
+        fs.writeFile(fileName, buffer, {}, (err, res) => {
+          if(err){
+              console.log("file err: ", err)
+              return
+          }
+          console.log('glb file has been saved!!!!!!!!')
+        })
+      }
+      reader.readAsArrayBuffer(blob)
+    } else {
+      console.log("other format: gltf")
+    }
+  }, options)
+}

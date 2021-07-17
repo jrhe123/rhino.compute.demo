@@ -323,7 +323,7 @@ function testMode2(rhinoMesh, materialObject, fileName){
       let blob = new Blob( [ result ], { type: 'application/octet-stream' } )
       var reader = new FileReader()
       reader.onload = function(){
-        var buffer = new Buffer(reader.result)
+        var buffer = Buffer.from(reader.result)
         const fs = require('fs')
         fs.writeFile(fileName, buffer, {}, (err, res) => {
           if(err){

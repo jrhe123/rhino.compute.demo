@@ -6,6 +6,8 @@ const {performance} = require('perf_hooks')
 const NodeCache = require('node-cache')
 const cache = new NodeCache()
 
+const rhino3dm = require("rhino3dm")
+
 const memjs = require('memjs')
 let mc = null
 
@@ -226,19 +228,19 @@ function decodeItem(item, rhino) {
   const data = JSON.parse(item.data)
   // console.log("decode: ", data)
   if (item.type === 'System.String') {
-    console.log("hit 1")
+    // console.log("hit 1")
     // hack for draco meshes
     try {
         return rhino.DracoCompression.decompressBase64String(data)
     } catch {} // ignore errors (maybe the string was just a string...)
   } else if (item.type === 'Rhino.Display.DisplayMaterial') {
-    console.log("hit 2")
+    // console.log("hit 2")
     return data
   } else if (typeof data === 'object') {
-    console.log("hit 3")
+    // console.log("hit 3")
     return rhino.CommonObject.decode(data)
   }
-  console.log("hit 4")
+  // console.log("hit 4")
   return null
 }
 
@@ -247,7 +249,6 @@ function testMode(responseStr, fileName){
   const values = responseJson.values
   fileName = fileName ? fileName : "temp.glb"
 
-  const rhino3dm = require("rhino3dm")
   rhino3dm().then((rhino) => {
     var rhinoMeshObject
     var rhinoMaterialObject
@@ -267,8 +268,8 @@ function testMode(responseStr, fileName){
       }
     }
 
-    console.log("rhinoMeshObject: ", rhinoMeshObject)
-    console.log("rhinoMaterialObject: ", rhinoMaterialObject)
+    // console.log("rhinoMeshObject: ", rhinoMeshObject)
+    // console.log("rhinoMaterialObject: ", rhinoMaterialObject)
 
     testMode2(rhinoMeshObject, rhinoMaterialObject, fileName)
   })
@@ -280,13 +281,11 @@ function testMode2(rhinoMesh, materialObject, fileName){
   const Canvas = require('canvas');
   const { Blob, FileReader } = require('vblob');
   const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-  const URL = require('url').URL;
 
   // Patch global scope to imitate browser environment.
   global.window = global;
   global.Blob = Blob;
   global.XMLHttpRequest = XMLHttpRequest;
-  global.URL = URL;
   global.FileReader = FileReader;
   global.THREE = THREE;
   global.document = {
@@ -307,12 +306,8 @@ function testMode2(rhinoMesh, materialObject, fileName){
   threeMaterial.color = color
   
   let newMesh = new THREE.Mesh(geometry, threeMaterial)
-
-  // let newMesh = new THREE.Mesh(geometry)
   newMesh.name = "my_mesh"
   newMesh.material.name = "my_mesh_material"
-
-  console.log("newMesh created success")
 
   require('three/examples/js/exporters/GLTFExporter');
   const exporter = new THREE.GLTFExporter();
@@ -335,7 +330,8 @@ function testMode2(rhinoMesh, materialObject, fileName){
               console.log("file err: ", err)
               return
           }
-          console.log('glb file has been saved!!!!!!!!')
+          console.log('--End of process: glb file has been saved!!!!!!!!')
+          testMode3()
         })
       }
       reader.readAsArrayBuffer(blob)
@@ -343,4 +339,13 @@ function testMode2(rhinoMesh, materialObject, fileName){
       console.log("other format: gltf")
     }
   }, options)
+}
+
+function testMode3(){
+  global.window = undefined;
+  global.Blob = undefined;
+  global.XMLHttpRequest = undefined;
+  global.FileReader = undefined;
+  global.THREE = undefined;
+  global.document = undefined
 }

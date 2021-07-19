@@ -33,6 +33,7 @@ console.log('RHINO_COMPUTE_URL: ' + process.env.RHINO_COMPUTE_URL)
 
 // Routes for this app
 app.get('/favicon.ico', (req, res) => res.status(200))
+app.use('/definition', require('./routes/definition'))
 app.use('/solve', require('./routes/solve'))
 app.use('/api', require('./routes/api'))
 app.use('/dxf', express.static(__dirname + '/dxf'))

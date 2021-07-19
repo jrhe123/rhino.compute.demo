@@ -74,7 +74,7 @@ function start(id){
     console.log('Listening on ' + bind)
     // print handy/view url
     if (typeof addr !== 'string') {
-      console.log(`http://localhost:${addr.port}/example/test`)
+      // console.log(`http://localhost:${addr.port}/example/test`)
     }
   }
 }

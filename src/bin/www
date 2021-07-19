@@ -19,8 +19,6 @@ function start(id){
   var app = require('../app')
   app.set('definitions', definitions)
 
-  // console.log("in middleware: ", definitions)
-
   var debug = require('debug')('compute.appserver:server')
 
   var port = normalizePort(process.env.PORT || '3000')
@@ -74,7 +72,7 @@ function start(id){
       : 'port ' + addr.port
     debug('Listening on ' + bind)
     console.log('Listening on ' + bind)
-    // print handy /view url
+    // print handy/view url
     if (typeof addr !== 'string') {
       console.log(`http://localhost:${addr.port}/example/test`)
     }

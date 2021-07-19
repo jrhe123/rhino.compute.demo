@@ -1,8 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 const md5File = require('md5-file')
-const compute = require('compute-rhino3d')
-const camelcaseKeys = require('camelcase-keys')
 
 function getFilesSync(dir) {
   return fs.readdirSync(dir)
@@ -25,29 +23,4 @@ function registerDefinitions() {
   return definitions
 }
 
-async function getParams(definitionUrl) {
-  // TODO: set and forget!
-  compute.url = process.env.RHINO_COMPUTE_URL
-  compute.apiKey = process.env.RHINO_COMPUTE_KEY
-
-  console.log("compute.url: ", compute.url)
-  console.log("compute.apiKey: ", compute.apiKey)
-
-  const response = await compute.computeFetch('io', { 'pointer': definitionUrl }, false)
-  
-  // throw error if response not ok
-  if(!response.ok) {
-    throw new Error(response.statusText)
-  }
-
-  let result = await response.json()
-  // json returned by /io is PascalCase and looks weird in javascript
-  result = camelcaseKeys(result, {deep: true})
-
-  let inputs = result.inputs === undefined ? result.inputNames : result.inputs
-  let outputs = result.outputs === undefined ? result.outputNames: result.outputs
-  const description = result.description === undefined ? '' : result.description
-  return { description, inputs, outputs }
-}
-
-module.exports = { registerDefinitions, getParams }
+module.exports = { registerDefinitions }

@@ -31,16 +31,12 @@ if (!process.env.RHINO_COMPUTE_URL)
 
 console.log('RHINO_COMPUTE_URL: ' + process.env.RHINO_COMPUTE_URL)
 
-app.set('view engine', 'hbs');
-app.set('views', './src/views')
-
 // Routes for this app
-app.use('/examples', express.static(__dirname + '/examples'))
 app.get('/favicon.ico', (req, res) => res.status(200))
-app.use('/definition', require('./routes/definition'))
 app.use('/solve', require('./routes/solve'))
-app.use('/view', require('./routes/template'))
-app.use('/', require('./routes/index'))
+app.use('/api', require('./routes/api'))
+app.use('/dxf', express.static(__dirname + '/dxf'))
+app.use('/glb', express.static(__dirname + '/glb'))
 
 // ref: https://github.com/expressjs/express/issues/3589
 // remove line when express@^4.17

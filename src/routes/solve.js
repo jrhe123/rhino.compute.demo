@@ -24,10 +24,6 @@ if(process.env.MEMCACHIER_SERVERS !== undefined) {
 }
 
 function computeParams (req, res, next){
-
-  console.log("gh: ", req.params.definition)
-  console.log("call computeParams")
-
   compute.url = process.env.RHINO_COMPUTE_URL
   compute.apiKey = process.env.RHINO_COMPUTE_KEY
   next()
@@ -37,11 +33,7 @@ function computeParams (req, res, next){
  * Collect request parameters
  * This middleware function stores request parameters in the same manner no matter the request method
  */
-
 function collectParams (req, res, next){
-
-  console.log("call collectParams")
-
   res.locals.params = {}
   switch (req.method){
   case 'HEAD':
@@ -75,11 +67,7 @@ function collectParams (req, res, next){
  * Check cache
  * This middleware function checks if a cache value exist for a cache key
  */
-
 function checkCache (req, res, next){
-
-  console.log("call checkCache")
-
   const key = {}
   key.definition = { 'name': res.locals.params.definition.name, 'id': res.locals.params.definition.id }
   key.inputs = res.locals.params.inputs
@@ -90,13 +78,11 @@ function checkCache (req, res, next){
 
   if(mc === null){
     // use node cache
-    //console.log('using node-cache')
     const result = cache.get(res.locals.cacheKey)
     res.locals.cacheResult = result !== undefined ? result : null
     next()
   } else {
     // use memcached
-    //console.log('using memcached')
     if(mc !== null) {
       mc.get(res.locals.cacheKey, function(err, val) {
         if(err == null) {
@@ -114,11 +100,7 @@ function checkCache (req, res, next){
  * json data to the appserver at this endpoint and that json is passed on to
  * compute for solving with Grasshopper.
  */
-
 function commonSolve (req, res, next){
-
-  console.log("call commonSolve")
-
   const timePostStart = performance.now()
   // set general headers
   // what is the proper max-age, 31536000 = 1 year, 86400 = 1 day
@@ -131,17 +113,14 @@ function commonSolve (req, res, next){
     const timespanPost = Math.round(performance.now() - timePostStart)
     res.setHeader('Server-Timing', `cacheHit;dur=${timespanPost}`)
 
-
     if (req.query.testMode) {
       testMode(res.locals.cacheResult, req.query.fileName)
     }
-
 
     res.send(res.locals.cacheResult)
     return
   } else {
     //solve
-    //console.log('solving')
     // set parameters
     let trees = []
     if(res.locals.params.inputs !== undefined) { //TODO: handle no inputs
@@ -175,11 +154,9 @@ function commonSolve (req, res, next){
       }
     }).then( (result) => {
 
-
       if (req.query.testMode) {
         testMode(result, req.query.fileName)
       }
-
 
       const timeComputeServerCallComplete = performance.now()
       let computeTimings = computeServerTiming.get('server-timing')
@@ -216,7 +193,7 @@ function commonSolve (req, res, next){
 const pipeline = [computeParams, collectParams, checkCache, commonSolve]
 
 // Handle different http methods
-router.head('/:definition',pipeline) // do we need HEAD?
+// router.head('/:definition',pipeline) // do we need HEAD?
 router.get('/:definition', pipeline)
 router.post('/', pipeline)
 

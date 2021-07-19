@@ -1,5 +1,6 @@
 ﻿node_modules
 .vscode/*
+.docs/*
 !.vscode/launch.json
 src/glb/*
 src/dxf/*

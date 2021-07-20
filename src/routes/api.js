@@ -1,14 +1,14 @@
 const express = require('express')
-var path = require("path");
-var multer  = require('multer')
-var storage = multer.diskStorage({
+const path = require("path");
+const multer  = require('multer')
+const storage = multer.diskStorage({
   destination: './src/dxf/',
   filename: function ( req, file, cb ) {
     cb( null, file.originalname)
   }
 });
-var upload = multer( { storage: storage } );
-let router = express.Router()
+const upload = multer( { storage: storage } );
+const router = express.Router()
 
 // Libs
 const {performance} = require('perf_hooks')

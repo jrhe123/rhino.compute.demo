@@ -34,7 +34,6 @@ console.log('RHINO_COMPUTE_URL: ' + process.env.RHINO_COMPUTE_URL)
 // Routes for this app
 app.get('/favicon.ico', (req, res) => res.status(200))
 app.use('/definition', require('./routes/definition'))
-app.use('/solve', require('./routes/solve'))
 app.use('/api', require('./routes/api'))
 app.use('/dxf', express.static(__dirname + '/dxf'))
 app.use('/glb', express.static(__dirname + '/glb'))
@@ -45,7 +44,9 @@ express.static.mime.types["wasm"] = "application/wasm";
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404))
+  return res.json({
+    msg: "server is running"
+  })
 })
 
 // error handler

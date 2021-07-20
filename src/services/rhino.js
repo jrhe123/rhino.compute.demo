@@ -39,8 +39,8 @@ const generateRhinoObj = (responseStr) => {
   const values = responseJson.values
   return new Promise((resolve, reject) => {
     rhino3dm().then((rhino) => {
-      var rhinoMeshObject
-      var rhinoMaterialObject
+      let rhinoMeshObject
+      let rhinoMaterialObject
       // for each output (RH_OUT:*)...
       for ( let i = 0; i < values.length; i ++ ) {
         // ...iterate through data tree structure...
@@ -87,11 +87,11 @@ const generateBuffer = (rhinoMesh, materialObject) => {
 
   // Three loader
   let loader = new THREE.BufferGeometryLoader()
-  var geometry = loader.parse(rhinoMesh.toThreejsJSON())
+  let geometry = loader.parse(rhinoMesh.toThreejsJSON())
 
   // Material
-  var threeMaterial = new THREE.MeshBasicMaterial()
-  var diffuse = `rgb(${materialObject.Diffuse})`
+  let threeMaterial = new THREE.MeshBasicMaterial()
+  let diffuse = `rgb(${materialObject.Diffuse})`
   const color = new THREE.Color(diffuse);
   threeMaterial.color = color
 
@@ -113,9 +113,9 @@ const generateBuffer = (rhinoMesh, materialObject) => {
     exporter.parse(newMesh, (result) => {
       if ( result instanceof ArrayBuffer ) {
         let blob = new Blob( [ result ], { type: 'application/octet-stream' } )
-        var reader = new FileReader()
+        const reader = new FileReader()
         reader.onload = function(){
-          var buffer = Buffer.from(reader.result)
+          const buffer = Buffer.from(reader.result)
           resolve(buffer)
         }
         reader.onloadend = function(){

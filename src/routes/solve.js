@@ -169,7 +169,7 @@ function commonSolve (req, res, next){
       const timespanComputeNetwork = Math.round(timespanCompute - sum)
       const timespanSetup = Math.round(timePreComputeServerCall - timePostStart)
       const timing = `setup;dur=${timespanSetup}, ${computeTimings}, network;dur=${timespanComputeNetwork}`
-        
+
       if(mc !== null) {
         //set memcached
         mc.set(res.locals.cacheKey, result, {expires:0}, function(err, val){
@@ -183,7 +183,7 @@ function commonSolve (req, res, next){
 
       res.setHeader('Server-Timing', timing)
       res.send(result)
-    }).catch( (error) => { 
+    }).catch( (error) => {
       next(error)
     })
   }
@@ -222,6 +222,14 @@ function decodeItem(item, rhino) {
 }
 
 function testMode(responseStr, fileName){
+
+  console.log("!!!!!!!!!!!!11")
+  console.log("!!!!!!!!!!!!11")
+  console.log("!!!!!!!!!!!!11")
+  console.log("!!!!!!!!!!!!11")
+  console.log("!!!!!!!!!!!!11")
+  console.log("mc: ", mc)
+
   const responseJson = JSON.parse(responseStr)
   const values = responseJson.values
   fileName = fileName ? fileName : "temp.glb"
@@ -281,7 +289,7 @@ function testMode2(rhinoMesh, materialObject, fileName){
   var diffuse = `rgb(${materialObject.Diffuse})`
   const color = new THREE.Color(diffuse);
   threeMaterial.color = color
-  
+
   let newMesh = new THREE.Mesh(geometry, threeMaterial)
   newMesh.name = "my_mesh"
   newMesh.material.name = "my_mesh_material"
